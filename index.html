@@ -69,6 +69,7 @@ footer button.haupt{width:46px;background:var(--tinte);color:#fff;border-color:v
   <button id="bv" title="Weiter (→)">▶▶</button>
   <button id="bw" title="Schritt wiederholen">↺</button>
   <div id="punkte"></div>
+  <label id="gdlab" style="font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="gd" checked> Geodreieck einblenden</label>
   <label id="erdlab" style="font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="erde"> Erde einblenden</label>
   <div id="hinweis">Globus mit der Maus drehen</div>
 </footer>
@@ -85,7 +86,7 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const seg=(t,a,b)=>clamp((t-a)/(b-a),0,1);
 
 /* ---------- Zustand ---------- */
-const S={schritt:0,t:0,auto:false,warte:0,cam:{yaw:-25,pitch:22},manuell:false,ort:{n:"Knittelfeld",l:14.8,b:47.2}};
+const S={gd:true,schritt:0,t:0,auto:false,warte:0,cam:{yaw:-25,pitch:22},manuell:false,ort:{n:"Knittelfeld",l:14.8,b:47.2}};
 const ortTxt=()=>`<span class="mathe">λ</span> = ${fmt(Math.abs(S.ort.l))}° ${S.ort.l>=0?"ö. L.":"w. L."}, <span class="mathe">φ</span> = ${fmt(Math.abs(S.ort.b))}° ${S.ort.b>=0?"n. Br.":"s. Br."}`;
 const ON=()=>S.ort.n||"der Punkt P";
 
@@ -257,7 +258,8 @@ function zweitafel(x0,y0,w,h,alpha){
   const Q=[cA[0]+R*Math.cos(B),cA[1]-z], PA=[cA[0]+rr*Math.sin(L),cA[1]-z], PG=[cG[0]+rr*Math.sin(L),cG[1]+rr*Math.cos(L)];
   // 1. Breite im Aufriss
   const s10a=A(10,.45,.62), s10b=A(10,.6,.7), s10c=A(10,.72,.95);
-  if(S.schritt===10){ const ein=A(10,0,.15), nv=B>=0?[0,-1]:[0,1], off=R*.35*(1-ein);
+  if(S.schritt===10&&!S.gd) winkelBogen(cA,R*.33,0,-B,C.rot,"φ",A(10,.1,.45));
+  else if(S.schritt===10){ const ein=A(10,0,.15), nv=B>=0?[0,-1]:[0,1], off=R*.35*(1-ein);
     geodreieck([cA[0]+nv[0]*off,cA[1]+nv[1]*off],[1,0],nv,R*1.15,R/4,Math.abs(S.ort.b),A(10,.18,.42),alpha*ein,C.rot); }
   else if(S.schritt>10) winkelBogen(cA,R*.33,0,-B,C.rot,"φ",1);
   if(s10a>0){ linie(cA,teil(cA,Q,s10a),C.rot,1.8,null,alpha); }
@@ -269,7 +271,8 @@ function zweitafel(x0,y0,w,h,alpha){
   if(s11b>0) kreis(cG,rr,C.blau,2,s11b,null,0,alpha);
   // 3. Länge im Grundriss
   const s12b=A(12,.45,.65), s12c=A(12,.7,.85);
-  if(S.schritt===12){ const ein=A(12,0,.15), nv=L>=0?[1,0]:[-1,0], off=R*.35*(1-ein);
+  if(S.schritt===12&&!S.gd) winkelBogen(cG,R*.3,Math.PI/2,Math.PI/2-L,C.gruen,"λ",A(12,.1,.45));
+  else if(S.schritt===12){ const ein=A(12,0,.15), nv=L>=0?[1,0]:[-1,0], off=R*.35*(1-ein);
     geodreieck([cG[0]+nv[0]*off,cG[1]],[0,1],nv,R*1.15,R/4,Math.abs(S.ort.l),A(12,.18,.42),alpha*ein,C.gruen); }
   else if(S.schritt>12) winkelBogen(cG,R*.3,Math.PI/2,Math.PI/2-L,C.gruen,"λ",1);
   if(s12b>0){ const E=[cG[0]+R*Math.sin(L),cG[1]+R*Math.cos(L)]; linie(cG,teil(cG,E,s12b),"#9a3d8f",1.8,null,alpha); }
@@ -329,6 +332,7 @@ function ui(nurText){ const s=SCHRITTE[S.schritt];
   if(!nurText){ $("punkte").innerHTML=SCHRITTE.map((x,i)=>`<i class="${i===S.schritt?"jetzt":i<S.schritt?"da":""}" title="${i+1}. ${x.t}" data-i="${i}"></i>`).join(""); } else { [...$("punkte").children].forEach((e,i)=>e.className=i===S.schritt?"jetzt":i<S.schritt?"da":""); } }
 sel.onchange=()=>{ const i=+sel.value; if(i>=0){ const s=STAEDTE[i]; setOrt(s[0],s[1],s[2]); } else setOrt("",S.ort.l,S.ort.b); S.manuell=false; };
 $("lam").oninput=$("phi").oninput=()=>{ S.ort={n:"",l:+$("lam").value,b:+$("phi").value}; sel.value=-1; S.manuell=false; ui(true); };
+$("gd").onchange=e=>{ S.gd=e.target.checked; S.t=0; };
 $("erde").onchange=e=>{ S.erde=e.target.checked; };
 document.querySelectorAll(".faelle button").forEach(b=>b.onclick=()=>{ const s=STAEDTE.find(x=>x[0]===b.dataset.o); setOrt(s[0],s[1],s[2]); S.manuell=false; if(S.schritt>=10&&S.schritt<14) S.t=0; });
 $("zufall").onclick=()=>{ let s; do{ s=STAEDTE[Math.floor(Math.random()*STAEDTE.length)]; }while(s[0]===S.ort.n); setOrt(s[0],s[1],s[2]); S.manuell=false; if(S.schritt>=10&&S.schritt<14) S.t=0; };
