@@ -28,6 +28,7 @@ select{font:inherit;padding:5px 6px;border:1px solid var(--linie);border-radius:
 .koord{font-size:17px;font-weight:600}
 .knopf{font:inherit;border:1px solid var(--linie);background:#fff;border-radius:6px;padding:6px 10px;cursor:pointer}
 .knopf:hover{border-color:#b9b3a4}
+.faelle{display:grid;grid-template-columns:1fr 1fr;gap:5px}.faelle button{font:inherit;font-size:12.5px;border:1px solid var(--linie);background:#fff;border-radius:6px;padding:5px 6px;cursor:pointer}.faelle button:hover{border-color:#b9b3a4}
 footer{grid-column:1/3;display:flex;align-items:center;gap:10px;padding:10px 20px;border-top:1px solid var(--linie);background:#fbfaf6}
 footer button{font:15px/1 inherit;width:38px;height:34px;border:1px solid var(--linie);border-radius:6px;background:#fff;cursor:pointer;color:var(--tinte)}
 footer button:hover{border-color:#b9b3a4}
@@ -56,6 +57,8 @@ footer button.haupt{width:46px;background:var(--tinte);color:#fff;border-color:v
     <label>Länge λ <span id="lw"></span></label><input type="range" id="lam" min="-180" max="180" step="0.5">
     <label>Breite φ <span id="pw"></span></label><input type="range" id="phi" min="-89" max="89" step="0.5">
     <button class="knopf" id="zufall">Zufällige Stadt</button>
+    <label>Die vier Fälle</label>
+    <div class="faelle"><button data-o="Knittelfeld">nB / öL</button><button data-o="New York">nB / wL</button><button data-o="Sydney">sB / öL</button><button data-o="Rio de Janeiro">sB / wL</button></div>
   </div>
   <div class="legende"><span><b style="background:var(--blau)"></b>Äquator, Breitenkreise</span><span><b style="background:var(--gruen)"></b>Nullmeridian</span><span><b style="background:var(--rot)"></b>Punkt P</span><span><b style="background:#888;height:0;border-top:2px dashed #888"></b>unsichtbar</span></div>
 </aside>
@@ -98,9 +101,9 @@ const SCHRITTE=[
  {t:"Die geografische Länge λ",d:3.5,x:()=>`<p>Die Länge ist der Winkel in der Äquatorebene zwischen dem Nullmeridian und dem Meridian von P.</p><p>${ON()}: <span class="mathe">λ</span> = ${fmt(Math.abs(S.ort.l))}° ${S.ort.l>=0?"öL":"wL"}</p>`},
  {t:"Zwei Zahlen für einen Punkt",d:2.5,x:()=>`<p>Mit Länge und Breite ist jeder Punkt der Kugel eindeutig festgelegt. P liegt auf dem Meridian mit der Länge <span class="mathe">λ</span> und auf dem Breitenkreis mit der Breite <span class="mathe">φ</span>, also in deren Schnittpunkt.</p><p>Wähl eine andere Stadt oder verschieb die Regler und beobachte, wie sich die beiden Winkel ändern.</p>`},
  {t:"Die Kugel in Grund- und Aufriss",d:8,x:()=>`<p>Von vorne gesehen (Aufriss) und von oben gesehen (Grundriss) ist der Umriss der Kugel jeweils ein Kreis mit Radius <span class="mathe">r</span>.</p><p>Im Aufriss erscheint der <b style="color:${C.blau}">Äquator</b> als waagrechter Durchmesser, der <b style="color:${C.gruen}">Nullmeridian</b> als senkrechter Durchmesser.</p><p>Im Grundriss ist der Äquator der Umrisskreis. Der Nullmeridian ist der Radius, der nach vorne (am Blatt nach unten) zeigt. Der Nordpol fällt mit dem Mittelpunkt M' zusammen.</p>`},
- {t:"1. Schritt: Breite im Aufriss",d:4,x:()=>`<p>Trag im Aufriss in M'' den Winkel <span class="mathe">φ</span> = ${fmt(Math.abs(S.ort.b))}° an die Äquatorstrecke an: nördliche Breite nach oben, südliche nach unten.</p><p>Der freie Schenkel trifft den Umriss im Punkt Q''. Durch Q'' zieht man die Waagrechte: Das ist der Breitenkreis von P im Aufriss.</p>`},
+ {t:"1. Schritt: Breite im Aufriss",d:7,x:()=>`<p>Leg das Geodreieck mit der langen Seite auf den Äquator, die 0 der Zentimeterskala genau auf M''. Bei nördlicher Breite zeigt die Spitze nach oben, bei südlicher Breite nach unten.</p><p>Gezählt wird vom rechten Ende des Äquators aus, also auf der Winkelskala, die dort mit 0° beginnt. Für ${ON()}: Spitze nach <b>${S.ort.b>=0?"oben":"unten"}</b>, Markierung bei <span class="mathe">φ</span> = ${fmt(Math.abs(S.ort.b))}°.</p><p>Der Strahl von M'' durch die Markierung trifft den Umriss in Q''. Durch Q'' zieht man die Waagrechte: Das ist der Breitenkreis von P im Aufriss.</p>`},
  {t:"2. Schritt: Breitenkreis im Grundriss",d:4,x:()=>`<p>Im Grundriss erscheint der Breitenkreis unverzerrt als Kreis um M'.</p><p>Seinen Radius <span class="mathe">r</span>·cos <span class="mathe">φ</span> holt man sich mit einem Ordner von Q'' nach unten. Dann zeichnet man mit dem Zirkel den Kreis.</p>`},
- {t:"3. Schritt: Länge im Grundriss",d:4,x:()=>`<p>Trag in M' den Winkel <span class="mathe">λ</span> = ${fmt(Math.abs(S.ort.l))}° vom Nullmeridian aus ab: östliche Länge nach rechts, westliche nach links.</p><p>Der freie Schenkel ist der Meridian von P. Wo er den Breitenkreis schneidet, liegt P'.</p>`},
+ {t:"3. Schritt: Länge im Grundriss",d:7,x:()=>`<p>Jetzt liegt die lange Seite des Geodreiecks auf dem Nullmeridian, die 0 wieder genau auf M'. Bei östlicher Länge zeigt die Spitze nach rechts, bei westlicher Länge nach links. Osten liegt also wie auf einer Landkarte rechts.</p><p>Gezählt wird vom Nullmeridian aus, auf der Skala, die am unteren (vorderen) Ende mit 0° beginnt. Für ${ON()}: Spitze nach <b>${S.ort.l>=0?"rechts":"links"}</b>, Markierung bei <span class="mathe">λ</span> = ${fmt(Math.abs(S.ort.l))}°.${Math.abs(S.ort.l)>90?" Weil der Winkel größer als 90° ist, zeigt der Schenkel schräg nach oben, also auf die Rückseite der Kugel.":""}</p><p>Der Strahl von M' durch die Markierung ist der Meridian von P. Wo er den Breitenkreis schneidet, liegt P'.</p>`},
  {t:"4. Schritt: Ordner in den Aufriss",d:3,x:()=>`<p>Ein Ordner von P' senkrecht nach oben schneidet den Breitenkreis im Aufriss. Dort liegt P''.</p><p>${ON()} (${lgTxt(S.ort.l,S.ort.b)}) ist damit in Grund- und Aufriss eingezeichnet.</p>`},
  {t:"Sichtbarkeit und Üben",d:2,x:()=>`<p>Im Grundriss sieht man nur die Nordhalbkugel. Punkte mit südlicher Breite sind dort unsichtbar und werden als leerer Kreis gezeichnet.</p><p>Im Aufriss sieht man nur die vordere Hälfte, also Punkte zwischen 90° wL und 90° öL.</p><p>${ON()}: Grundriss ${S.ort.b>=0?"sichtbar":"unsichtbar"}, Aufriss ${Math.cos(rad(S.ort.l))>=0?"sichtbar":"unsichtbar"}.</p><p>Probier weitere Städte aus, zum Beispiel eine auf der Südhalbkugel oder in Amerika.</p>`}
 ];
@@ -203,6 +206,36 @@ function winkelBogen(c,r,w0,w1,farbe,label,f=1){ // Winkel in Bildschirmkoordina
   g.strokeStyle=farbe; g.lineWidth=1.5; g.beginPath(); g.arc(c[0],c[1],r,Math.min(w0,w),Math.max(w0,w)); g.stroke();
   if(f>.95&&label){ const wm=(w0+w1)/2; txt([c[0]+Math.cos(wm)*(r+13),c[1]+Math.sin(wm)*(r+13)],label,farbe,{font:"italic 700 16px Cambria Math,Times New Roman,serif",align:"center"}); } }
 
+function geodreieck(c,u,n,L,cm,th,f,alpha,farbe){ // c: Nullpunkt, u: Richtung 0°, n: Richtung zur Spitze, th: Zielwinkel (Grad), f: Fortschritt der Markierung
+  if(alpha<=0) return;
+  const P=(a,b)=>[c[0]+u[0]*a+n[0]*b,c[1]+u[1]*a+n[1]*b], D=(d,r)=>{ const t=rad(d); return P(r*Math.cos(t),r*Math.sin(t)); };
+  const tx=(p,s,col,font)=>{ g.font=font; g.fillStyle=col; g.textAlign="center"; g.textBaseline="middle"; g.fillText(s,p[0],p[1]); };
+  g.save(); g.globalAlpha=alpha;
+  // Körper
+  g.beginPath(); let q=P(L,0); g.moveTo(q[0],q[1]); q=P(0,L); g.lineTo(q[0],q[1]); q=P(-L,0); g.lineTo(q[0],q[1]); g.closePath();
+  g.fillStyle="rgba(214,234,243,.80)"; g.fill(); g.strokeStyle="#4f7686"; g.lineWidth=1.3; g.stroke();
+  // Aussparung
+  g.beginPath(); q=P(.2*L,.72*L); g.moveTo(q[0],q[1]); q=P(0,.92*L); g.lineTo(q[0],q[1]); q=P(-.2*L,.72*L); g.lineTo(q[0],q[1]); g.closePath(); g.strokeStyle="rgba(79,118,134,.55)"; g.lineWidth=1; g.stroke();
+  // Zentimeterskala auf der langen Seite
+  g.strokeStyle="#35535f"; g.lineWidth=.8;
+  const kmax=Math.floor(L/(cm/2)-.3);
+  for(let k=-kmax;k<=kmax;k++){ const a=k*cm/2, lang=k%2===0; const p0=P(a,0), p1=P(a,lang?.055*L:.03*L); g.beginPath(); g.moveTo(p0[0],p0[1]); g.lineTo(p1[0],p1[1]); g.stroke();
+    if(lang&&k!==0) tx(P(a,.1*L),String(Math.abs(k/2)),"#35535f","9px Segoe UI,system-ui,sans-serif"); }
+  tx(P(0,.1*L),"0","#10303c","700 11px Segoe UI,system-ui,sans-serif");
+  // Winkelskala
+  const r2=.66*L;
+  g.beginPath(); for(let d=0;d<=180;d+=2){ const p=D(d,r2); d?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]); } g.strokeStyle="#35535f"; g.lineWidth=.8; g.stroke();
+  for(let d=0;d<=180;d+=5){ const p0=D(d,r2), p1=D(d,r2-(d%10?.03:.06)*L); g.beginPath(); g.moveTo(p0[0],p0[1]); g.lineTo(p1[0],p1[1]); g.stroke(); }
+  for(let d=10;d<=170;d+=10){ tx(D(d,.55*L),String(d),"#10303c","9.5px Segoe UI,system-ui,sans-serif"); tx(D(d,.45*L),String(180-d),"#7d929a","8px Segoe UI,system-ui,sans-serif"); }
+  tx(D(3,.55*L),"0","#10303c","9.5px Segoe UI,system-ui,sans-serif");
+  // Markierung
+  if(f>0){ const w=th*f;
+    g.beginPath(); g.moveTo(c[0],c[1]); for(let i=0;i<=40;i++){ const p=D(w*i/40,r2); g.lineTo(p[0],p[1]); } g.closePath(); g.fillStyle=farbe; g.globalAlpha=alpha*.16; g.fill(); g.globalAlpha=alpha;
+    g.beginPath(); for(let i=0;i<=40;i++){ const p=D(w*i/40,r2); i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]); } g.strokeStyle=farbe; g.lineWidth=3; g.stroke();
+    const m0=D(w,r2-.08*L), m1=D(w,r2+.07*L); g.beginPath(); g.moveTo(m0[0],m0[1]); g.lineTo(m1[0],m1[1]); g.lineWidth=2.4; g.stroke();
+    const lp=D(Math.max(w/2,9),.3*L); g.font="700 14px Segoe UI,system-ui,sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.strokeStyle=C.papier; g.lineWidth=4; const s=fmt(w)+"°"; g.strokeText(s,lp[0],lp[1]); g.fillStyle=farbe; g.fillText(s,lp[0],lp[1]); }
+  g.restore(); }
+
 function zweitafel(x0,y0,w,h,alpha){
   const R=Math.min(w*.36,(h-70)/4.4), cx=x0+w/2, gap=Math.max(26,R*.32), cA=[cx,y0+h/2-gap/2-R], cG=[cx,y0+h/2+gap/2+R];
   g.globalAlpha=alpha;
@@ -223,8 +256,11 @@ function zweitafel(x0,y0,w,h,alpha){
   const L=rad(S.ort.l), B=rad(S.ort.b), rr=R*Math.cos(B), z=R*Math.sin(B);
   const Q=[cA[0]+R*Math.cos(B),cA[1]-z], PA=[cA[0]+rr*Math.sin(L),cA[1]-z], PG=[cG[0]+rr*Math.sin(L),cG[1]+rr*Math.cos(L)];
   // 1. Breite im Aufriss
-  const s10a=A(10,0,.45), s10b=A(10,.45,.75), s10c=A(10,.7,1);
-  if(s10a>0){ winkelBogen(cA,R*.33,0,-B,C.rot,"φ",s10a); linie(cA,teil(cA,Q,s10a),C.rot,1.6,null,alpha); }
+  const s10a=A(10,.45,.62), s10b=A(10,.6,.7), s10c=A(10,.72,.95);
+  if(S.schritt===10){ const ein=A(10,0,.15), nv=B>=0?[0,-1]:[0,1], off=R*.35*(1-ein);
+    geodreieck([cA[0]+nv[0]*off,cA[1]+nv[1]*off],[1,0],nv,R*1.15,R/4,Math.abs(S.ort.b),A(10,.18,.42),alpha*ein,C.rot); }
+  else if(S.schritt>10) winkelBogen(cA,R*.33,0,-B,C.rot,"φ",1);
+  if(s10a>0){ linie(cA,teil(cA,Q,s10a),C.rot,1.8,null,alpha); }
   if(s10b>0){ pkt(Q,C.rot,true,3.5,alpha); txt([Q[0]+8,Q[1]+(B>=0?-8:10)],"Q''",C.rot,{alpha}); }
   if(s10c>0){ const l0=[cA[0]-rr,cA[1]-z], l1=[cA[0]+rr,cA[1]-z]; linie(teil(l1,l0,0),teil(l1,l0,s10c),C.blau,2,null,alpha); }
   // 2. Breitenkreis im Grundriss
@@ -232,8 +268,10 @@ function zweitafel(x0,y0,w,h,alpha){
   if(s11a>0){ const fus=[Q[0],cG[1]]; linie(Q,teil(Q,fus,s11a),"#8b8b8b",1,[4,4],alpha); if(s11a>.95){ linie(cG,fus,C.blau,1,[2,3],alpha*.6); } }
   if(s11b>0) kreis(cG,rr,C.blau,2,s11b,null,0,alpha);
   // 3. Länge im Grundriss
-  const s12a=A(12,0,.5), s12b=A(12,.5,.85), s12c=A(12,.8,1);
-  if(s12a>0){ winkelBogen(cG,R*.3,Math.PI/2,Math.PI/2-L,C.gruen,"λ",s12a); }
+  const s12b=A(12,.45,.65), s12c=A(12,.7,.85);
+  if(S.schritt===12){ const ein=A(12,0,.15), nv=L>=0?[1,0]:[-1,0], off=R*.35*(1-ein);
+    geodreieck([cG[0]+nv[0]*off,cG[1]],[0,1],nv,R*1.15,R/4,Math.abs(S.ort.l),A(12,.18,.42),alpha*ein,C.gruen); }
+  else if(S.schritt>12) winkelBogen(cG,R*.3,Math.PI/2,Math.PI/2-L,C.gruen,"λ",1);
   if(s12b>0){ const E=[cG[0]+R*Math.sin(L),cG[1]+R*Math.cos(L)]; linie(cG,teil(cG,E,s12b),"#9a3d8f",1.8,null,alpha); }
   if(s12c>0){ pkt(PG,C.rot,B>=0,5,alpha*s12c); txt([PG[0]+9,PG[1]-10],"P'",C.rot,{alpha:alpha*s12c,font:"700 14px Segoe UI,system-ui,sans-serif"}); }
   // 4. Ordner in den Aufriss
@@ -292,6 +330,7 @@ function ui(nurText){ const s=SCHRITTE[S.schritt];
 sel.onchange=()=>{ const i=+sel.value; if(i>=0){ const s=STAEDTE[i]; setOrt(s[0],s[1],s[2]); } else setOrt("",S.ort.l,S.ort.b); S.manuell=false; };
 $("lam").oninput=$("phi").oninput=()=>{ S.ort={n:"",l:+$("lam").value,b:+$("phi").value}; sel.value=-1; S.manuell=false; ui(true); };
 $("erde").onchange=e=>{ S.erde=e.target.checked; };
+document.querySelectorAll(".faelle button").forEach(b=>b.onclick=()=>{ const s=STAEDTE.find(x=>x[0]===b.dataset.o); setOrt(s[0],s[1],s[2]); S.manuell=false; if(S.schritt>=10&&S.schritt<14) S.t=0; });
 $("zufall").onclick=()=>{ let s; do{ s=STAEDTE[Math.floor(Math.random()*STAEDTE.length)]; }while(s[0]===S.ort.n); setOrt(s[0],s[1],s[2]); S.manuell=false; if(S.schritt>=10&&S.schritt<14) S.t=0; };
 $("punkte").onclick=e=>{ const i=e.target.dataset.i; if(i!==undefined){ setAuto(false); geheZu(+i); } };
 $("b0").onclick=()=>{ setAuto(false); geheZu(0); };
